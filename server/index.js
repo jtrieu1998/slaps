@@ -19,6 +19,43 @@ const io = new Server(server, {
 // Game logic starts here
 let players = new Set()
 let gameStarted = false
+let ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
+let suits = ['s','c','d','h']
+
+
+const generateDeck = () => {
+  let deck = []
+  suits.forEach( (s) => {
+    ranks.forEach( (r) => {
+      let card = {rank: r, suit: s}
+      card.rank = r
+      card.suit = s
+      deck.push(card)
+    })
+  })
+
+  return deck
+}
+
+const shuffle = () => {
+  let deck = generateDeck()
+  let card1, card2, temp
+
+  for( let i = 0; i < 1000; i++){
+    card1 = Math.floor((Math.random() * deck.length));
+    card2 = Math.floor((Math.random() * deck.length));
+    temp = deck[card1];
+
+    // console.log(deck[card1],card1,deck[card2],card2)
+    deck[card1] = deck[card2]
+    deck[card2] = temp
+    // console.log(deck)
+  }
+  
+  return deck
+}
+
+let deck = shuffle();
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`)
@@ -36,6 +73,10 @@ io.on("connection", (socket) => {
     console.log("Player removed: ", socket.id);
     console.log(players)
   });
+
+  socket.on("show_deck", () => {
+    console.log(deck)
+  })
 })
 
 server.listen(3001, () => {

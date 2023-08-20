@@ -21,11 +21,16 @@ function App() {
     setInGame(true)
   }
 
+  const showDeck = () => {
+    socket.emit("show_deck")
+  }
+
   if(!inGame){
     return ( 
       <div className="App">
         <button onClick={addPlayer}>Connect to play</button>
         <button onClick={addSpectator}>Connect to spectate</button>
+        <button onClick={showDeck}>SHOW DECK</button>
       </div>
     );
   } else {
