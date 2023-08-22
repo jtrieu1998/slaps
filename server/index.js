@@ -79,7 +79,8 @@ io.on("connection", (socket) => {
   socket.on("add_player", () => {
     players.add(socket.id)
     console.log(players)
-    socket.broadcast.emit("player_id", (players.size-1))
+    console.log(players.size-1)
+    io.to(socket.id).emit("player_id", (players.size-1))  // io.to(socket.id) emits back to sender
   })
 
   // Player closes tab
@@ -112,7 +113,7 @@ io.on("connection", (socket) => {
     console.log("Card was played")
     if(pid == turn){
       let cardPlayed = hands[pid].shift()
-      socket.emit("card_played", (pid, cardPlayed))
+      io.emit("card_played", pid, cardPlayed)
       middleDeck.push(cardPlayed)
       console.log(middleDeck)
       turn++

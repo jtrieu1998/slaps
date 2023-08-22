@@ -2,17 +2,19 @@ import './App.css';
 import io from 'socket.io-client'
 import { useEffect, useState } from 'react';
 
-const socket = io.connect("http://localhost:3001", {
-  'sync disconnect on unload': true
-})
+const socket = io.connect("http://localhost:3001")
 
 function App() {
   const [inLobby, setInLobby] = useState(false)
   const [inGame, setInGame] = useState(false)
   const [middleDeck, setMiddleDeck] = useState([])
   const [pid, setPid] = useState(0)
+  let lastCard
 
   // TODO: function to check slapability
+  const addToMiddle = (cardPlayed) => {
+    
+  }
 
   const addPlayer = () => {
     socket.emit("add_player")
@@ -41,6 +43,7 @@ function App() {
 
   useEffect(() => {
     socket.on("player_id", (pid_) => {
+      console.log(pid_)
       setPid(pid_)
     })
 
@@ -50,15 +53,30 @@ function App() {
 
     // TODO: use pid for card count
     socket.on("card_played", (pid, cardPlayed) => {
-      setMiddleDeck([
-        ...middleDeck,
-        cardPlayed
-      ])
-      console.log(middleDeck, cardPlayed)
+      if(lastCard === undefined || (lastCard.rank !== cardPlayed.rank || lastCard.suit !== cardPlayed.suit)){
+        console.log(lastCard, cardPlayed)
+        setMiddleDeck( middleDeck => [
+          ...middleDeck,
+          cardPlayed
+        ])
+      }
+      lastCard = cardPlayed
       // TODO: add function to check slapability
     })
 
   }, [socket])
+
+  const displayMiddleDeck = () => {
+    console.log("DISPLAY DECK: ", middleDeck)
+    let middleCards = middleDeck.map(card => {
+      return card.rank+card.suit
+    })
+    return (
+      <div>
+        {middleCards}
+      </div>
+    )
+  }
 
   if(!inLobby){
     return ( 
@@ -78,10 +96,10 @@ function App() {
   } else {
     return (
       <div className="App">
-        <h1>Welcome to the game!</h1>
+        <h1>Welcome player {pid+1}!</h1>
         <button onClick={() => playCard(pid)}>Play Card</button>
         {/* <button onClick={player_slap}>Slap</button> */}
-        <div>HERE IS THE MIDDLE DECK: {middleDeck[0]}</div>
+        <div>HERE IS THE MIDDLE DECK: {displayMiddleDeck()}</div>
       </div>
     )
   }
