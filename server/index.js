@@ -24,7 +24,16 @@ let suits = ['s','c','d','h']
 let hands
 let middleDeck = []
 let turn = 0
+let delay = 0
+let royalLoop = false
 let slapable = false
+
+const resetGlobals = () => {
+  middleDeck = []
+  turn = 0
+  delay = 0
+  royalLoop = false
+}
 
 const generateDeck = () => {
   let deck = []
@@ -62,7 +71,7 @@ const dealCards = (numPlayers, deck) => {
     hands[h] = []
   }
   let h = 0
-  for(let c = 0; c < deck.length-42; c++){
+  for(let c = 0; c < deck.length; c++){
     if(h > numPlayers-1){
       h = 0
     }
@@ -72,6 +81,79 @@ const dealCards = (numPlayers, deck) => {
   return hands
 } 
 
+const incTurn = () => {
+  turn++
+  if(turn > players.size-1){
+    turn = 0
+  } 
+}
+
+const turnDelay = (cardPlayed) => {
+  let card = cardPlayed.rank
+  let delay = 0
+  switch(card){
+    case 'A':
+      delay = 4
+      break
+    case 'K':
+      delay = 3
+      break
+    case 'Q':
+      delay = 2
+      break
+    case 'J':
+      delay = 1
+      break
+    default:
+      break
+  }
+  return delay
+}
+
+const newRoyalCard = (cardPlayed) => {
+  delay = turnDelay(cardPlayed)
+  incTurn()
+}
+
+// Checks if the top cards are a legal slap
+const isSlappable = () => {
+  if(middleDeck.length < 2){
+    slapable = false
+  }
+  if(middleDeck.length === 2){
+    if(middleDeck[0].rank === middleDeck[1].rank){
+      slapable = true
+    }
+  }
+  if(middleDeck.length > 2){
+    let top3 = middleDeck.slice(middleDeck.length - 3)
+    if(
+      top3[0].rank === top3[1].rank ||
+      top3[0].rank === top3[2].rank ||
+      top3[1].rank === top3[2].rank 
+    ){
+      slapable = true
+    }
+  }
+  return slapable
+}
+
+// Call when someone wins the middle deck
+// Give middle deck and reset delay and royalLoop
+const givePlayerMiddleDeck = () => {
+  let winningPlayer
+  if(turn == 0){
+    winningPlayer = players.size-1
+  } else {
+    winningPlayer = turn-1
+  }
+
+  console.log("BEFORE THE WIN: ", middleDeck, hands[winningPlayer], turn)
+  hands[winningPlayer] = hands[winningPlayer].concat(middleDeck)
+  console.log(`Player ${winningPlayer} Wins the Pile!`)
+  resetGlobals()
+  console.log("AFTER THE WIN: ", middleDeck, hands[winningPlayer])
+}
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`)
 
@@ -92,8 +174,7 @@ io.on("connection", (socket) => {
 
     // If all players disconnect reset game
     if(players.size == 0){
-      middleDeck = []
-      turn = 0
+      resetGlobals()
     }
   });
 
@@ -113,15 +194,25 @@ io.on("connection", (socket) => {
     console.log("Card was played")
     if(pid == turn){
       let cardPlayed = hands[pid].shift()
-      io.emit("card_played", pid, cardPlayed)
+      io.emit("card_played", pid, cardPlayed) // emit pid for card count feature later
       middleDeck.push(cardPlayed)
-      console.log(middleDeck)
-      turn++
-      if(turn > players.size-1){
-        turn = 0
+
+      if(delay > 0){  // If a royal is played
+        royalLoop = true
       }
-      // emit pid for card count feature later
-      
+      if(royalLoop === false){  // Increment the turn when in normal state
+        newRoyalCard(cardPlayed)
+      } else {  // Have same player add cards til either a royal or finished
+        delay -= 1
+        if(turnDelay(cardPlayed) > 0){
+          newRoyalCard(cardPlayed)
+        }
+        console.log("DELAY: ",delay)
+      }
+      // give middle pile out to turn-1 or pid.length-1 if turn == 0
+      if(delay == 0 && royalLoop){
+        givePlayerMiddleDeck()
+      }
     } else {
       // do nothing
     }

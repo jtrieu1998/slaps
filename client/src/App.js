@@ -69,7 +69,7 @@ function App() {
   const displayMiddleDeck = () => {
     console.log("DISPLAY DECK: ", middleDeck)
     let middleCards = middleDeck.map(card => {
-      return card.rank+card.suit
+      return card.rank+card.suit+" "
     })
     return (
       <div>
