@@ -28,9 +28,9 @@ let delay = 0
 let royalLoop = false
 let slapable = false
 
-const resetGlobals = () => {
+const resetGlobals = (turn_ = 0) => {
   middleDeck = []
-  turn = 0
+  turn = turn_
   delay = 0
   royalLoop = false
 }
@@ -148,12 +148,12 @@ const givePlayerMiddleDeck = () => {
     winningPlayer = turn-1
   }
 
-  console.log("BEFORE THE WIN: ", middleDeck, hands[winningPlayer], turn)
   hands[winningPlayer] = hands[winningPlayer].concat(middleDeck)
   console.log(`Player ${winningPlayer} Wins the Pile!`)
-  resetGlobals()
-  console.log("AFTER THE WIN: ", middleDeck, hands[winningPlayer])
+  resetGlobals(winningPlayer)
 }
+
+
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`)
 
@@ -212,6 +212,7 @@ io.on("connection", (socket) => {
       // give middle pile out to turn-1 or pid.length-1 if turn == 0
       if(delay == 0 && royalLoop){
         givePlayerMiddleDeck()
+        io.emit("clear_middle")
       }
     } else {
       // do nothing

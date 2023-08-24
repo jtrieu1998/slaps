@@ -64,6 +64,9 @@ function App() {
       // TODO: add function to check slapability
     })
 
+    socket.on("clear_middle", () => {
+      setMiddleDeck([])
+    })
   }, [socket])
 
   const displayMiddleDeck = () => {
