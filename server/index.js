@@ -26,7 +26,7 @@ let middleDeck = []
 let turn = 0
 let delay = 0
 let royalLoop = false
-let slapable = false
+let slappable = false
 
 const resetGlobals = (turn_ = 0) => {
   middleDeck = []
@@ -118,11 +118,11 @@ const newRoyalCard = (cardPlayed) => {
 // Checks if the top cards are a legal slap
 const isSlappable = () => {
   if(middleDeck.length < 2){
-    slapable = false
+    slappable = false
   }
   if(middleDeck.length === 2){
     if(middleDeck[0].rank === middleDeck[1].rank){
-      slapable = true
+      slappable = true
     }
   }
   if(middleDeck.length > 2){
@@ -132,10 +132,10 @@ const isSlappable = () => {
       top3[0].rank === top3[2].rank ||
       top3[1].rank === top3[2].rank 
     ){
-      slapable = true
+      slappable = true
     }
   }
-  return slapable
+  return slappable
 }
 
 // Call when someone wins the middle deck
