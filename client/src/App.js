@@ -11,11 +11,6 @@ function App() {
   const [pid, setPid] = useState(0)
   let lastCard
 
-  // TODO: function to check slapability
-  const addToMiddle = (cardPlayed) => {
-    
-  }
-
   const addPlayer = () => {
     socket.emit("add_player")
     console.log("Adding player")
@@ -41,6 +36,10 @@ function App() {
     socket.emit("play_card", (pid_))
   }
 
+  const playSlap = (pid_) => {
+    socket.emit("play_slap", (pid_))
+  }
+
   useEffect(() => {
     socket.on("player_id", (pid_) => {
       console.log(pid_)
@@ -56,12 +55,11 @@ function App() {
       if(lastCard === undefined || (lastCard.rank !== cardPlayed.rank || lastCard.suit !== cardPlayed.suit)){
         console.log(lastCard, cardPlayed)
         setMiddleDeck( middleDeck => [
-          ...middleDeck,
+          ... middleDeck,
           cardPlayed
         ])
       }
       lastCard = cardPlayed
-      // TODO: add function to check slapability
     })
 
     socket.on("clear_middle", () => {
@@ -101,7 +99,7 @@ function App() {
       <div className="App">
         <h1>Welcome player {pid+1}!</h1>
         <button onClick={() => playCard(pid)}>Play Card</button>
-        {/* <button onClick={player_slap}>Slap</button> */}
+        <button onClick={() => playSlap(pid)}>SLAP!!!</button>
         <div>HERE IS THE MIDDLE DECK: {displayMiddleDeck()}</div>
       </div>
     )
@@ -110,27 +108,3 @@ function App() {
 }
 
 export default App;
-
-
-// const [message,setMessage] = useState("")
-// const [messageReceived, setMessageReceived] = useState("")
-
-  // const sendMessage = () => {
-//   socket.emit("send_message", {message})
-// }
-
-// useEffect(() => {
-//   socket.on("receive_message", (data) => {
-//     setMessageReceived(data.message)
-//   })
-// }, [socket])
-
-//   <input 
-//   placeholder="Message" 
-//   onChange={(event) => {
-//     setMessage(event.target.value)
-//   }}
-// />
-// <button onClick={sendMessage}> Send Message</button>
-// <h1>Message: </h1>
-// {messageReceived}

@@ -221,14 +221,11 @@ io.on("connection", (socket) => {
 
   // TODO: socket.on slap
   //   input = slapability, timeToInput, pid
+  socket.on("play_slap", (pid) => {
+
+  })
 })
 
 server.listen(3001, () => {
   console.log("SERVER RUNNING")
 })
-
-// socket.on("send_message", (data) => {
-//   console.log(`Message came from: ${socket.id}`)
-//   socket.broadcast.emit("receive_message", data)
-  
-// })
