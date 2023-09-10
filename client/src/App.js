@@ -62,8 +62,20 @@ function App() {
       lastCard = cardPlayed
     })
 
+    // socket.on("card_burned", (pid, cardBurned) => {
+    //   if(lastCard === undefined || (lastCard.rank !== cardBurned.rank || lastCard.suit !== cardBurned.suit)){
+    //     console.log(lastCard, cardBurned)
+    //     setMiddleDeck( middleDeck => [
+    //       cardBurned,
+    //       ... middleDeck
+    //     ])
+    //   }
+    // })
+
     socket.on("clear_middle", () => {
-      setMiddleDeck([])
+      setTimeout(() => {
+        setMiddleDeck([])
+      }, 700)
     })
   }, [socket])
 
@@ -99,7 +111,7 @@ function App() {
       <div className="App">
         <h1>Welcome player {pid+1}!</h1>
         <button onClick={() => playCard(pid)}>Play Card</button>
-        <button onClick={() => playSlap(pid)}>SLAP!!!</button>
+        <button onClick={() => playSlap(pid)}>SLAP!!!/Collect</button>
         <div>HERE IS THE MIDDLE DECK: {displayMiddleDeck()}</div>
       </div>
     )

@@ -18,7 +18,6 @@ const io = new Server(server, {
 
 // Game logic starts here
 let players = new Set()
-// let gameStarted = false
 let ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
 let suits = ['s','c','d','h']
 let hands
@@ -26,7 +25,7 @@ let middleDeck = []
 let turn = 0
 let delay = 0
 let royalLoop = false
-let slappable = false
+// let slappable = false
 
 const resetGlobals = (turn_ = 0) => {
   middleDeck = []
@@ -140,12 +139,16 @@ const isSlappable = () => {
 
 // Call when someone wins the middle deck
 // Give middle deck and reset delay and royalLoop
-const givePlayerMiddleDeck = () => {
+const givePlayerMiddleDeck = (pid = -1) => {
   let winningPlayer
-  if(turn == 0){
-    winningPlayer = players.size-1
+  if(pid >= 0){
+    winningPlayer = pid
   } else {
-    winningPlayer = turn-1
+    if(turn == 0){
+      winningPlayer = players.size-1
+    } else {
+      winningPlayer = turn-1
+    }
   }
 
   hands[winningPlayer] = hands[winningPlayer].concat(middleDeck)
@@ -153,6 +156,11 @@ const givePlayerMiddleDeck = () => {
   resetGlobals(winningPlayer)
 }
 
+const burnCard = (pid) => {
+  let burnedCard = hands[pid].shift()
+  middleDeck.unshift(burnedCard)
+  return burnCard
+}
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`)
@@ -209,11 +217,13 @@ io.on("connection", (socket) => {
         }
         console.log("DELAY: ",delay)
       }
+
       // give middle pile out to turn-1 or pid.length-1 if turn == 0
       if(delay == 0 && royalLoop){
         givePlayerMiddleDeck()
         io.emit("clear_middle")
       }
+      
     } else {
       // do nothing
     }
@@ -222,9 +232,19 @@ io.on("connection", (socket) => {
   // TODO: socket.on slap
   //   input = slapability, timeToInput, pid
   socket.on("play_slap", (pid) => {
-
+    let slappable = isSlappable()
+    if(slappable){
+      givePlayerMiddleDeck(pid)
+      io.emit("clear_middle")
+    } else {
+      let cardBurned = burnCard(pid)
+      io.emit("card_burned", pid, cardBurned)
+    }
   })
 })
+
+//TODO: a collect action so that a slap can occur if player is too slow to collect
+
 
 server.listen(3001, () => {
   console.log("SERVER RUNNING")
