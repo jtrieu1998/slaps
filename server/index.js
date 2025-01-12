@@ -4,6 +4,8 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const { disconnect } = require("process");
+import { InitialDeck } from "./initialDeck";
+import { GameDeck } from "./gameDeck";
 
 app.use(cors());
 
@@ -16,24 +18,10 @@ const io = new Server(server, {
   },
 });
 
-// Game logic starts here
-let players = new Set()
-let ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
-let suits = ['s','c','d','h']
-let hands
-let middleDeck = []
-let turn = 0
-let delay = 0
+let initialDeck = new InitialDeck()
+let gameDeck = new GameDeck()
 let royalLoop = false
 // let slappable = false
-
-const resetGlobals = (turn_ = 0) => {
-  middleDeck = []
-  turn = turn_
-  delay = 0
-  royalLoop = false
-}
-
 const generateDeck = () => {
   let deck = []
   suits.forEach( (s) => {
